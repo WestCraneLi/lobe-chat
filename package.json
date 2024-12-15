@@ -312,5 +312,8 @@
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org"
+  },
+  "resolutions": {
+    "esbuild": "0.23.1"
   }
 }

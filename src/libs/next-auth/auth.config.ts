@@ -8,7 +8,7 @@ export const initSSOProviders = () => {
   return authEnv.NEXT_PUBLIC_ENABLE_NEXT_AUTH
     ? authEnv.NEXT_AUTH_SSO_PROVIDERS.split(/[,，]/).map((provider) => {
         const validProvider = ssoProviders.find((item) => item.id === provider.trim());
-
+        // @ts-ignore
         if (validProvider) return validProvider.provider;
 
         throw new Error(`[NextAuth] provider ${provider} is not supported`);
