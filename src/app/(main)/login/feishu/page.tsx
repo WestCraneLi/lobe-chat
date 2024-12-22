@@ -2,7 +2,6 @@
 
 import React, { useEffect } from 'react';
 import { createStyles } from 'antd-style';
-import { getAuthConfig } from '@/config/auth';
 
 // 开发环境
 const devBaseUrl = 'http://localhost:3010';
@@ -66,7 +65,7 @@ const QRLoginPage = () => {
       const QRLoginObj = window.QRLogin({
         goto: gotoUrl,
         id: 'qr-container',
-        style: 'width: 300px; height: 300px; margin-left: 3em; border: 0; background-color: #E6F4F3; background-size: cover; border-radius: 10px;',
+        style: 'width: 300px; height: 300px; margin-left: 3em; border: 0; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); background-size: cover; border-radius: 10px;',
       });
 
       const handleMessage = (event: any) => {
