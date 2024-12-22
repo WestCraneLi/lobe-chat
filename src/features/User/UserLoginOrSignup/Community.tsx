@@ -2,11 +2,17 @@ import { Button } from 'antd';
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Flexbox } from 'react-layout-kit';
+import { useRouter } from 'next/navigation';
 
 import UserInfo from '../UserInfo';
 
 const UserLoginOrSignup = memo<{ onClick: () => void }>(({ onClick }) => {
   const { t } = useTranslation('auth');
+  const router = useRouter();
+
+  onClick = () => {
+    router.push('/login/feishu');
+  }
 
   return (
     <>

@@ -9,8 +9,8 @@ export async function POST(request: Request) {
 
   // 构造获取app_access_token的请求body
   const body = {
-    app_id: process.env.AUTH_FEISHU_ID,
-    app_secret: process.env.AUTH_FEISHU_SECRET,
+    app_id: process.env.NEXT_PUBLIC_AUTH_FEISHU_ID,
+    app_secret: process.env.NEXT_PUBLIC_AUTH_FEISHU_SECRET,
   };
 
   // 获取app_access_token的请求url

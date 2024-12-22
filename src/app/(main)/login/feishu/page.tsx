@@ -2,14 +2,15 @@
 
 import React, { useEffect } from 'react';
 import { createStyles } from 'antd-style';
+import { getAuthConfig } from '@/config/auth';
 
 // 开发环境
 const devBaseUrl = 'http://localhost:3010';
 // 生产环境
 const prodBaseUrl = '';
 const baseUrl = process.env.NODE_ENV === 'development' ? devBaseUrl : prodBaseUrl;
-const appId = process.env.AUTH_FEISHU_ID;
 const redirectUri = `${baseUrl}`;
+const NEXT_PUBLIC_AUTH_FEISHU_ID = process.env.NEXT_PUBLIC_AUTH_FEISHU_ID
 
 const useStyles = createStyles(({ css }) => ({
   feishuLoginContainer: css`
@@ -48,51 +49,60 @@ const QRLoginPage = () => {
   useEffect(() => {
     const script = document.createElement('script');
     script.src = '/sdk/feishu.sdk.js';
-    script.addEventListener('load', () => {
-      if (window.QRLogin) {
-        console.log('QRLogin loaded');
+    script.async = true; // Make script load asynchronously
 
-        // 确保 QRLogin 初始化在脚本加载完成后进行
-        const gotoUrl = `https://passport.feishu.cn/suite/passport/oauth/authorize?client_id=${appId}&redirect_uri=${encodeURI(
-          redirectUri,
-        )}&response_type=code&state=success_login`;
-
-        // 初始化 QRLogin
-        const QRLoginObj = window.QRLogin({
-          goto: gotoUrl,
-          id: 'qr-container',
-          style:
-            'width: 300px; height: 300px; margin-left: 3em; border: 0; background-color: #E6F4F3; background-size: cover;border-radius: 10px;',
-        });
-
-        const handleMessage = function (event: any) {
-          const origin = event.origin;
-          console.log('event', event);
-          if (QRLoginObj.matchOrigin(origin) && window.location.href.includes('/login/feishu')) {
-            const loginTmpCode = event.data;
-            window.location.href = `${gotoUrl}&tmp_code=${loginTmpCode}`;
-          }
-        };
-        if (typeof window.addEventListener !== 'undefined') {
-          window.addEventListener('message', handleMessage, false);
-        } else if (typeof window.attachEvent !== 'undefined') {
-          window.attachEvent('onmessage', handleMessage);
-        }
-      } else {
+    const handleScriptLoad = () => {
+      if (!window.QRLogin) {
         console.error('QRLogin is not defined even after script load');
+        return;
       }
-    });
 
-    script.addEventListener('error', () => {
+      console.log('QRLogin loaded');
+
+      // Generate the authorization URL
+      const gotoUrl = `https://passport.feishu.cn/suite/passport/oauth/authorize?client_id=${NEXT_PUBLIC_AUTH_FEISHU_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&state=success_login`;
+
+      // Initialize QRLogin widget
+      const QRLoginObj = window.QRLogin({
+        goto: gotoUrl,
+        id: 'qr-container',
+        style: 'width: 300px; height: 300px; margin-left: 3em; border: 0; background-color: #E6F4F3; background-size: cover; border-radius: 10px;',
+      });
+
+      const handleMessage = (event: any) => {
+        const origin = event.origin;
+        if (QRLoginObj.matchOrigin(origin) && window.location.href.includes('/login/feishu')) {
+          const loginTmpCode = event.data;
+          window.location.href = `${gotoUrl}&tmp_code=${loginTmpCode}`;
+        }
+      };
+
+      // Add event listener for 'message' event
+      window.addEventListener('message', handleMessage);
+
+      // Cleanup event listener and QRLogin object on unmount
+      return () => {
+        window.removeEventListener('message', handleMessage);
+        QRLoginObj && QRLoginObj.cleanup && QRLoginObj.cleanup();
+      };
+    };
+
+    const handleScriptError = () => {
       console.error('Failed to load the QRLogin script.');
-    })
+    };
 
-    // 将脚本追加到文档
-    document.body.append(script);
+    // Add event listeners for script loading and error
+    script.addEventListener('load', handleScriptLoad);
+    script.addEventListener('error', handleScriptError);
 
-    // 清理脚本，避免重复加载
+    // Append the script to the body
+    document.body.appendChild(script);
+
+    // Cleanup on component unmount: remove the script
     return () => {
-      script.remove();
+      script.removeEventListener('load', handleScriptLoad);
+      script.removeEventListener('error', handleScriptError);
+      document.body.removeChild(script);
     };
   });
 

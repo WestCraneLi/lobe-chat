@@ -53,7 +53,7 @@ function LobeFeishuProvider(
 const provider = LobeFeishuProvider({
   authorization: {
     params: {
-      app_id: process.env.AUTH_FEISHU_ID,
+      app_id: process.env.NEXT_PUBLIC_AUTH_FEISHU_ID,
       redirect_uri: encodeURI(`${baseUrl}`),
       scope: "",
       state: "RANDOMSTATE",
