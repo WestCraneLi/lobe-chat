@@ -1,6 +1,6 @@
 import { t } from 'i18next';
 
-import { enableAuth, enableClerk, enableNextAuth } from '@/const/auth';
+import { enableAuth, enableClerk, enableFeiShu, enableNextAuth } from '@/const/auth';
 import { BRANDING_NAME } from '@/const/branding';
 import { UserStore } from '@/store/user';
 import { LobeUser } from '@/types/user';
@@ -38,6 +38,8 @@ const isLogin = (s: UserStore) => {
   // 如果没有开启鉴权，说明不需要登录，默认是登录态
   if (!enableAuth) return true;
 
+  if (enableFeiShu) return true;
+
   return s.isSignedIn;
 };
 
@@ -46,5 +48,6 @@ export const authSelectors = {
   isLogin,
   isLoginWithAuth: (s: UserStore) => s.isSignedIn,
   isLoginWithClerk: (s: UserStore): boolean => (s.isSignedIn && enableClerk) || false,
+  isLoginWithFeiShu: (s: UserStore): boolean => (s.isSignedIn && !!enableFeiShu) || false,
   isLoginWithNextAuth: (s: UserStore): boolean => (s.isSignedIn && !!enableNextAuth) || false,
 };

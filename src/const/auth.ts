@@ -2,7 +2,10 @@ import { authEnv } from '@/config/auth';
 
 export const enableClerk = authEnv.NEXT_PUBLIC_ENABLE_CLERK_AUTH;
 export const enableNextAuth = authEnv.NEXT_PUBLIC_ENABLE_NEXT_AUTH;
-export const enableAuth = enableClerk || enableNextAuth || false;
+// export const enableFeishu = authEnv.NEXT_PUBLIC_ENABLE_FEISHU;
+export const enableFeiShu = true;
+export const enableAuth = enableClerk || enableNextAuth || enableFeiShu || false;
+// export const enableAuth = true;
 
 export const LOBE_CHAT_AUTH_HEADER = 'X-lobe-chat-auth';
 

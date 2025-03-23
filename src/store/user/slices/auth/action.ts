@@ -1,11 +1,16 @@
 import { StateCreator } from 'zustand/vanilla';
 
-import { enableAuth, enableClerk, enableNextAuth } from '@/const/auth';
+import { enableAuth, enableClerk, enableFeiShu, enableNextAuth } from '@/const/auth';
+import { LobeUser } from '@/types/user';
 
 import { UserStore } from '../../store';
 
 export interface UserAuthAction {
   enableAuth: () => boolean;
+  /**
+   * universal login method
+   */
+  feishuLogin: (params?: any) => Promise<void>;
   /**
    * universal logout method
    */
@@ -14,6 +19,8 @@ export interface UserAuthAction {
    * universal login method
    */
   openLogin: () => Promise<void>;
+  resetUser: () => void;
+  setUser: (userInfo: LobeUser) => void;
 }
 
 export const createAuthSlice: StateCreator<
@@ -25,6 +32,44 @@ export const createAuthSlice: StateCreator<
   enableAuth: () => {
     return enableAuth;
   },
+  feishuLogin: async (params: any = {}) => {
+    if (!enableFeiShu) return;
+    const user = get().user;
+    if (user?.id) return;
+
+    const redirectPath = '/chat';
+    const body = {
+      loginTime: Date.now(),
+      redirect_uri: `${window.location.origin}${redirectPath}`,
+      url: window.location.href,
+      ...params,
+    };
+
+    try {
+      const response = await fetch('/api/feishu/userinfo', {
+        body: JSON.stringify(body),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || 'System error');
+      }
+
+      const data = await response.json();
+      console.log('Feishu login data:', data);
+      get().setUser({
+        ...data.qrUserInfo,
+        ...data.tokenInfo,
+      });
+    } catch (error) {
+      console.error('Feishu login error:', error);
+      // 拦截器、toast等
+    }
+  },
   logout: async () => {
     if (enableClerk) {
       get().clerkSignOut?.({ redirectUrl: location.toString() });
@@ -35,6 +80,12 @@ export const createAuthSlice: StateCreator<
     if (enableNextAuth) {
       const { signOut } = await import('next-auth/react');
       signOut();
+      return;
+    }
+
+    if (enableFeiShu) {
+      get().resetUser();
+      return;
     }
   },
   openLogin: async () => {
@@ -58,6 +109,20 @@ export const createAuthSlice: StateCreator<
         return;
       }
       signIn();
+      return;
     }
+
+    if (enableFeiShu) {
+      const { redirect } = await import('next/navigation');
+      redirect('/main/feishu-login');
+      return;
+    }
+    return;
+  },
+  resetUser: () => {
+    set({ user: { id: '' } });
+  },
+  setUser: (userInfo: LobeUser) => {
+    set({ user: userInfo });
   },
 });
