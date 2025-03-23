@@ -34,8 +34,7 @@ export const createAuthSlice: StateCreator<
   },
   feishuLogin: async (params: any = {}) => {
     if (!enableFeiShu) return;
-    const user = get().user;
-    if (user?.id) return;
+    if (get().isSignedIn) return;
 
     const redirectPath = '/chat';
     const body = {
@@ -62,8 +61,8 @@ export const createAuthSlice: StateCreator<
       const data = await response.json();
       console.log('Feishu login data:', data);
       get().setUser({
-        ...data.qrUserInfo,
-        ...data.tokenInfo,
+        ...data.data.qrUserInfo,
+        ...data.data.tokenInfo,
       });
     } catch (error) {
       console.error('Feishu login error:', error);
@@ -120,9 +119,15 @@ export const createAuthSlice: StateCreator<
     return;
   },
   resetUser: () => {
-    set({ user: { id: '' } });
+    set({
+      isSignedIn: false,
+      user: { id: '' },
+    });
   },
   setUser: (userInfo: LobeUser) => {
-    set({ user: userInfo });
+    set({
+      isSignedIn: true,
+      user: userInfo,
+    });
   },
 });
